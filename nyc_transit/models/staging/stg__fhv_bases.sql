@@ -1,4 +1,3 @@
-
 WITH source AS (
 
     SELECT * FROM {{ source('main', 'fhv_bases') }}
@@ -12,7 +11,7 @@ renamed AS (
         base_name,
         dba,
         -- to maintain consistency with other text, they made in upper case
-        UPPER(dba_category) as dba_category,
+        TRIM(UPPER(dba_category)) as dba_category,
         filename
     
     FROM source
