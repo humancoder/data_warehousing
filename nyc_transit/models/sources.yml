@@ -5,6 +5,7 @@ sources:
         columns:
           - name: tripduration
             data_type: varchar
+            description: "trip duration in seconds"
           - name: starttime
             data_type: varchar
           - name: stoptime
@@ -66,22 +67,31 @@ sources:
         columns:
           - name: station
             data_type: varchar
+            description: " (17 characters) is the station identification code. Please see http://www1.ncdc.noaa.gov/pub/data/ghcn/daily/ghcnd-stations.txt for a complete list of stations and their metadata."
           - name: name
             data_type: varchar
+            description: " (max 50 characters) is the name of the station (usually city/airport name). Optional output field."
           - name: date
             data_type: varchar
+            description: "the year of the record (4 digits) followed by month (2 digits) and day (2 digits)."
           - name: awnd
             data_type: varchar
+            description: "Average daily wind speed (meters per second or miles per hour as per user preference)"
           - name: prcp
             data_type: varchar
+            description: "Precipitation (mm or inches as per user preference, inches to hundredths on Daily Form pdf file)"
           - name: snow
             data_type: varchar
+            description: "Snowfall (mm or inches as per user preference, inches to tenths on Daily Form pdf file)"
           - name: snwd
             data_type: varchar
+            description: "Snow depth (mm or inches as per user preference, inches on Daily Form pdf file)"
           - name: tmax
             data_type: varchar
+            description: " Maximum temperature (Fahrenheit or Celsius as per user preference, Fahrenheit to tenths on Daily Form pdf file)"
           - name: tmin
             data_type: varchar
+            description: "Minimum temperature (Fahrenheit or Celsius as per user preference, Fahrenheit to tenths on Daily Form pdf file)"
           - name: filename
             data_type: varchar
 
@@ -89,10 +99,13 @@ sources:
         columns:
           - name: base_number
             data_type: varchar
+            description: "The TLC Base License Number of the base that dispatched the trip"
           - name: base_name
             data_type: varchar
+            description: "offical name of the base entity"
           - name: dba
             data_type: varchar
+            description: "the 'Doing Business As'(DBA) name of the base entity"
           - name: dba_category
             data_type: varchar
           - name: filename
@@ -102,16 +115,46 @@ sources:
         columns:
           - name: dispatching_base_num
             data_type: varchar
+            description: "The TLC Base License Number of the base that dispatched the trip"
+            tests:
+              - not_null
+              - dbt_expectations.expect_column_to_exist
+              - relationships: # Source relationships are not as important as staging as data cleaning is necassary
+                  to: source('main', 'fhv_bases')
+                  field: base_number
+                  severity: warn
           - name: pickup_datetime
             data_type: timestamp
+            description: "The date and time of the trip pick-up"
+            tests:
+              - not_null
+              - dbt_expectations.expect_column_to_exist
           - name: dropoff_datetime
             data_type: timestamp
+            description: "The date and time of the trip drop-off"
+            tests:
+              - not_null
+              - dbt_expectations.expect_column_to_exist
           - name: pulocationid
             data_type: double
+            description: "The TLC Taxi Zone in which the trip began"
           - name: dolocationid
             data_type: double
+            description: "The TLC Taxi Zone in which the trip ended"
           - name: sr_flag
             data_type: integer
+            description: "Indicates if the trip was a part of a shared ride chain offered by a High Volume FHV company (e.g. Uber Pool, Lyft Line). For shared trips, the value is 1. For non-shared rides, this field is null.
+
+            NOTE: For most High Volume FHV companies, only shared rides that 
+            were requested AND matched to another shared-ride request over 
+            the course of the journey are flagged. However, Lyft (base license 
+            numbers B02510 + B02844) also flags rides for which a shared ride 
+            was requested but another passenger was not successfully matched 
+            to share the trip—therefore, trips records with SR_Flag=1 from those 
+            two bases could indicate EITHER a first trip in a shared trip chain OR 
+            a trip for which a shared ride was requested but never matched. 
+            Users should anticipate an overcount of successfully shared trips 
+            completed by Lyft. "
           - name: affiliated_base_number
             data_type: varchar
           - name: filename
@@ -121,52 +164,107 @@ sources:
         columns:
           - name: hvfhs_license_num
             data_type: varchar
+            description: "The TLC license number of the HVFHS base or business
+            As of September 2019, the HVFHS licensees are the following:
+            • HV0002: Juno
+            • HV0003: Uber
+            • HV0004: Via
+            • HV0005: Lyft"
           - name: dispatching_base_num
             data_type: varchar
+            description: "The TLC Base License Number of the base that dispatched the trip"
           - name: originating_base_num
             data_type: varchar
+            description: "base number of the base that received the original trip request"
           - name: request_datetime
             data_type: timestamp
+            description: "date/time when passenger requested to be picked up"
           - name: on_scene_datetime
             data_type: timestamp
+            description: "date/time when driver arrived at the pick-up location (Accessible Vehicles-only)"
           - name: pickup_datetime
             data_type: timestamp
+            description: "The date and time of the trip pick-up"
+            tests:
+              - not_null
+              - dbt_expectations.expect_column_to_exist
           - name: dropoff_datetime
             data_type: timestamp
+            description: "The date and time of the trip drop-off"
+            tests:
+              - not_null
+              - dbt_expectations.expect_column_to_exist
           - name: pulocationid
             data_type: bigint
+            description: "The TLC Taxi Zone in which the trip began"
           - name: dolocationid
             data_type: bigint
+            description: "The TLC Taxi Zone in which the trip ended"
           - name: trip_miles
             data_type: double
+            description: "Total miles of passenger trip"
+            tests:
+              - dbt_expectations.expect_column_values_to_be_between:
+                  min_value: 0
+                  max_value: 1000
           - name: trip_time
             data_type: bigint
+            description: "Total time of in seconds of passenger trip"
           - name: base_passenger_fare
             data_type: double
+            description: "base passenger fare before tolls, tips, taxes, and fees"
           - name: tolls
             data_type: double
+            description: "Total amount of all tolls paid in trip"
           - name: bcf
             data_type: double
+            description: "total amount collected in trip for Black Car Fund"
           - name: sales_tax
             data_type: double
+            description: "total amount collected in trip for NYS sales tax"
           - name: congestion_surcharge
             data_type: double
+            description: "total amount collected in trip for NYS congestion surcharge"
           - name: airport_fee
             data_type: double
+            description: "2.50 for both drop off and pick up at LaGuardia, Newark, and John 
+            F. Kennedy airports"
           - name: tips
             data_type: double
+            description: "total amount tips received from passenger"
           - name: driver_pay
             data_type: double
+            description: "total driver pay (not including tolls or tips and net of commission, surcharges, or taxes)"
           - name: shared_request_flag
             data_type: varchar
+            description: "Did the passenger agree to a shared/pooled ride, regardless of whether they were matched? (Y/N)"
           - name: shared_match_flag
             data_type: varchar
+            description: "Did the passenger share the vehicle with another passenger who booked separately at any point during the trip? (Y/N)"
           - name: access_a_ride_flag
             data_type: varchar
+            description: "Was the trip administered on behalf of the Metropolitan Transportation Authority (MTA)? (Y/N)"
+            tests:
+              - accepted_values:
+                  values: ['Y', 'N']
+                  config:
+                    severity: warn
           - name: wav_request_flag
             data_type: varchar
+            description: "Did the passenger request a wheelchair-accessible vehicle (WAV)? (Y/N)"
+            tests:
+              - accepted_values:
+                  values: ['Y', 'N']
+                  config:
+                    severity: warn
           - name: wav_match_flag
             data_type: varchar
+            description: "Did the trip occur in a wheelchair-accessible vehicle (WAV)? (Y/N)"
+            tests:
+              - accepted_values:
+                  values: ['Y', 'N']
+                  config:
+                    severity: warn
           - name: filename
             data_type: varchar
 
@@ -190,6 +288,12 @@ sources:
             data_type: double
           - name: trip_distance
             data_type: double
+            description: "Trip distance in miles"
+            tests:
+              - dbt_expectations.expect_column_values_to_be_between:
+                  min_value: 0
+                  max_value: 1000
+                  severity: warn
           - name: fare_amount
             data_type: double
           - name: extra

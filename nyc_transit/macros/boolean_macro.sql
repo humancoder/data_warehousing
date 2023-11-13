@@ -3,10 +3,10 @@
 {% macro boolean_macro(column_name, true_value="Y", false_value="N", null_value=" ") -%}
 
     (CASE 
-        WHEN {{ column_name }} = '{{true_value}}' THEN TRUE
-        WHEN {{ column_name }} = '{{false_value}}' THEN FALSE
-        WHEN {{ column_name }} = '{{null_value}}' THEN NULL
-        WHEN {{ column_name }} IS NULL THEN NULL
+        WHEN TRIM(UPPER({{ column_name }})) = '{{true_value}}' THEN TRUE
+        WHEN TRIM(UPPER({{ column_name }})) = '{{false_value}}' THEN FALSE
+        WHEN TRIM(UPPER({{ column_name }})) = '{{null_value}}' THEN NULL
+        WHEN TRIM(UPPER({{ column_name }})) IS NULL THEN NULL
         ELSE {{ column_name }}
     END)::bool
 

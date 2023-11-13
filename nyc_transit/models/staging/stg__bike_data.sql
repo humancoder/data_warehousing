@@ -57,6 +57,9 @@ select
 	coalesce("end station latitude", end_lat)::double as end_lat,
 	coalesce("end station longitude", end_lng)::double as end_lng,
 	filename
+    
+
 from renamed
+    WHERE tripduration > 0 and tripduration < 30000
 
 

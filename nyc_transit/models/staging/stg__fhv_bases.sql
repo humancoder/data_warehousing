@@ -7,10 +7,10 @@ WITH source AS (
 renamed AS (
 
     SELECT
-        base_number,
-        base_name,
-        dba,
         -- to maintain consistency with other text, they made in upper case
+        TRIM(UPPER(base_number)) as base_number,
+        TRIM(UPPER(base_name)) as base_name,
+        dba,
         TRIM(UPPER(dba_category)) as dba_category,
         filename
     

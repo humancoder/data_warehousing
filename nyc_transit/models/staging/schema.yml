@@ -1,0 +1,478 @@
+
+models:
+  - name: stg__bike_data
+    description: "Data from the Citi Bike System in NYC"
+    columns:
+      - name: started_at_ts
+        data_type: timestamp
+        description: ""
+        tests:
+          - not_null
+          - dbt_expectations.expect_column_to_exist
+          - dbt_expectations.expect_column_values_to_be_of_type:
+              column_type: timestamp
+             
+      - name: ended_at_ts
+        data_type: timestamp
+        description: ""
+        tests:
+          - not_null
+          - dbt_expectations.expect_column_to_exist
+          - dbt_expectations.expect_column_values_to_be_of_type:
+              column_type: timestamp
+
+      - name: tripduration
+        data_type: bigint
+        description: "trip duration in seconds"
+        tests:
+          - not_null
+          - dbt_expectations.expect_column_to_exist
+          - dbt_expectations.expect_column_values_to_be_of_type:
+              column_type: bigint
+          - dbt_expectations.expect_column_values_to_be_between:
+              min_value: 0
+              max_value: 30000
+              severity: warn 
+
+      - name: start_station_id
+        data_type: varchar
+        description: ""
+
+      - name: start_station_name
+        data_type: varchar
+        description: ""
+
+      - name: start_lat
+        data_type: double
+        description: "start station latitude"
+
+      - name: start_lng
+        data_type: double
+        description: "start station longitude"
+
+      - name: end_station_id
+        data_type: varchar
+        description: ""
+
+      - name: end_station_name
+        data_type: varchar
+        description: ""
+
+      - name: end_lat
+        data_type: double
+        description: "end station latitude"
+
+      - name: end_lng
+        data_type: double
+        description: "end station longitude"
+
+      - name: filename
+        data_type: varchar
+        description: ""
+
+  - name: central_park_weather
+    description: "Weather data from Central Park in NYC"
+    columns:
+      - name: station
+        data_type: varchar
+        description: " (17 characters) is the station identification code. Please see http://www1.ncdc.noaa.gov/pub/data/ghcn/daily/ghcnd-stations.txt for a complete list of stations and their metadata."
+
+      - name: name
+        data_type: varchar
+        description: " (max 50 characters) is the name of the station (usually city/airport name). Optional output field."
+
+      - name: date
+        data_type: varchar
+        description: "the year of the record (4 digits) followed by month (2 digits) and day (2 digits)."
+
+      - name: awnd
+        data_type: varchar
+        description: "Average daily wind speed (meters per second or miles per hour as per user preference)"
+
+      - name: prcp
+        data_type: varchar
+        description: "Precipitation (mm or inches as per user preference, inches to hundredths on Daily Form pdf file)"
+
+      - name: snow
+        data_type: varchar
+        description: "Snowfall (mm or inches as per user preference, inches to tenths on Daily Form pdf file)"
+
+      - name: snwd
+        data_type: varchar
+        description: "Snow depth (mm or inches as per user preference, inches on Daily Form pdf file)"
+
+      - name: tmax
+        data_type: varchar
+        description: " Maximum temperature (Fahrenheit or Celsius as per user preference, Fahrenheit to tenths on Daily Form pdf file)"
+
+      - name: tmin
+        data_type: varchar
+        description: "Minimum temperature (Fahrenheit or Celsius as per user preference, Fahrenheit to tenths on Daily Form pdf file)"
+
+      - name: filename
+        data_type: varchar
+
+  - name: stg__fhv_bases
+    description: "Serves as a lookup tables for FHV (For-Hire Vehicle) Base numbers and attribute data"
+    columns:
+      - name: base_number
+        data_type: varchar
+        description: "The TLC license number of the dispatching base"
+        tests:
+         - not_null 
+         - unique
+
+      - name: base_name
+        data_type: varchar
+        description: ""
+
+      - name: dba
+        data_type: varchar
+        description: "DBA (Doing Business As) name of the dispatching base"
+
+      - name: dba_category
+        data_type: varchar
+        description: ""
+
+      - name: filename
+        data_type: varchar
+        description: ""
+
+  - name: stg__fhv_tripdata
+    description: ""
+    columns:
+      - name: dispatching_base_num
+        data_type: varchar
+        description: "The TLC license number of the dispatching base"
+        tests:
+          - relationships:
+                  to: source('staging', 'stg__fhv_bases')
+                  field: base_number
+                  severity: warn
+
+      - name: pickup_datetime
+        data_type: timestamp
+        description: "The time and date of the trip pick-up"
+
+      - name: dropoff_datetime
+        data_type: timestamp
+        description: ""
+
+      - name: pulocationid
+        data_type: integer
+        description: "The TLC Taxi Zone in which the trip began"
+
+      - name: dolocationid
+        data_type: integer
+        description: "The TLC Taxi Zone in which the trip ended"
+
+      - name: affiliated_base_num
+        data_type: varchar
+        description: ""
+
+      - name: filename
+        data_type: varchar
+        description: ""
+
+  - name: stg__fhvhv_tripdata
+    description: ""
+    columns:
+      - name: hvfhs_license_num
+        data_type: varchar
+        description: ""
+
+      - name: dispatching_base_num
+        data_type: varchar
+        description: ""
+        tests:
+          - relationships:
+                  to: source('staging', 'stg__fhv_bases')
+                  field: base_number
+
+      - name: originating_base_num
+        data_type: varchar
+        description: ""
+        tests:
+          - relationships:
+                  to: source('staging', 'stg__fhv_bases')
+                  field: base_number
+
+      - name: request_datetime
+        data_type: timestamp
+        description: ""
+
+      - name: on_scene_datetime
+        data_type: timestamp
+        description: ""
+
+      - name: pickup_datetime
+        data_type: timestamp
+        description: ""
+        tests:
+          - not_null
+
+      - name: dropoff_datetime
+        data_type: timestamp
+        description: ""
+
+      - name: pulocationid
+        data_type: bigint
+        description: ""
+
+      - name: dolocationid
+        data_type: bigint
+        description: ""
+
+      - name: trip_miles
+        data_type: double
+        description: ""
+        tests:
+          - dbt_expectations.expect_column_values_to_be_between:
+              min_value: 0
+              max_value: 1000 
+              severity: error # raise error if staging data is poor
+        
+
+      - name: trip_time
+        data_type: bigint
+        description: "Trip time in seconds (max of 30,000 seconds ~ 8.3 hours))"
+        tests:
+          - dbt_expectations.expect_column_values_to_be_between:
+              min_value: 0
+              max_value: 30000
+              severity: error # raise error if staging data is poor
+
+      - name: base_passenger_fare
+        data_type: double
+        description: ""
+
+      - name: tolls
+        data_type: double
+        description: ""
+
+      - name: bcf
+        data_type: double
+        description: ""
+
+      - name: sales_tax
+        data_type: double
+        description: ""
+
+      - name: congestion_surcharge
+        data_type: double
+        description: ""
+
+      - name: airport_fee
+        data_type: double
+        description: ""
+
+      - name: tips
+        data_type: double
+        description: ""
+
+      - name: driver_pay
+        data_type: double
+        description: ""
+
+      - name: shared_request_flag
+        data_type: boolean
+        description: ""
+
+      - name: shared_match_flag
+        data_type: boolean
+        description: ""
+
+      - name: access_a_ride_flag
+        data_type: boolean
+        description: ""
+        tests:
+          - dbt_expectations.expect_column_values_to_be_of_type:
+              column_type: bool
+              severity: warn
+      
+              
+      - name: wav_request_flag
+        data_type: boolean
+        description: ""
+        tests:
+          - dbt_expectations.expect_column_values_to_be_of_type:
+              column_type: bool
+              severity: warn
+
+      - name: wav_match_flag
+        data_type: boolean
+        description: ""
+        tests:
+          - dbt_expectations.expect_column_values_to_be_of_type:
+              column_type: bool
+              severity: warn
+
+      - name: filename
+        data_type: varchar
+        description: ""
+
+  - name: stg__green_tripdata
+    description: ""
+    columns:
+      - name: vendorid
+        data_type: bigint
+        description: ""
+
+      - name: lpep_pickup_datetime
+        data_type: timestamp
+        description: ""
+
+      - name: lpep_dropoff_datetime
+        data_type: timestamp
+        description: ""
+
+      - name: store_and_fwd_flag
+        data_type: boolean
+        description: ""
+
+      - name: ratecodeid
+        data_type: double
+        description: ""
+
+      - name: pulocationid
+        data_type: bigint
+        description: ""
+
+      - name: dolocationid
+        data_type: bigint
+        description: ""
+
+      - name: passenger_count
+        data_type: integer
+        description: ""
+
+      - name: trip_distance
+        data_type: double
+        description: ""
+
+      - name: fare_amount
+        data_type: double
+        description: ""
+
+      - name: extra
+        data_type: double
+        description: ""
+
+      - name: mta_tax
+        data_type: double
+        description: ""
+
+      - name: tip_amount
+        data_type: double
+        description: ""
+
+      - name: tolls_amount
+        data_type: double
+        description: ""
+
+      - name: improvement_surcharge
+        data_type: double
+        description: ""
+
+      - name: total_amount
+        data_type: double
+        description: ""
+
+      - name: payment_type
+        data_type: double
+        description: ""
+
+      - name: trip_type
+        data_type: double
+        description: ""
+
+      - name: congestion_surcharge
+        data_type: double
+        description: ""
+
+      - name: filename
+        data_type: varchar
+        description: ""
+
+  - name: stg__yellow_tripdata
+    description: ""
+    columns:
+      - name: vendorid
+        data_type: bigint
+        description: ""
+
+      - name: tpep_pickup_datetime
+        data_type: timestamp
+        description: ""
+
+      - name: tpep_dropoff_datetime
+        data_type: timestamp
+        description: ""
+
+      - name: store_and_fwd_flag
+        data_type: boolean
+        description: ""
+
+      - name: ratecodeid
+        data_type: double
+        description: ""
+
+      - name: pulocationid
+        data_type: bigint
+        description: ""
+
+      - name: dolocationid
+        data_type: bigint
+        description: ""
+
+      - name: passenger_count
+        data_type: integer
+        description: ""
+
+      - name: trip_distance
+        data_type: varchar
+        description: ""
+
+      - name: fare_amount
+        data_type: double
+        description: ""
+
+      - name: extra
+        data_type: double
+        description: ""
+
+      - name: mta_tax
+        data_type: double
+        description: ""
+
+      - name: tip_amount
+        data_type: double
+        description: ""
+
+      - name: tolls_amount
+        data_type: double
+        description: ""
+
+      - name: improvement_surcharge
+        data_type: double
+        description: ""
+
+      - name: total_amount
+        data_type: double
+        description: ""
+
+      - name: payment_type
+        data_type: bigint
+        description: ""
+
+      - name: congestion_surcharge
+        data_type: double
+        description: ""
+
+      - name: airport_fee
+        data_type: double
+        description: ""
+
+      - name: filename
+        data_type: varchar
+        description: ""

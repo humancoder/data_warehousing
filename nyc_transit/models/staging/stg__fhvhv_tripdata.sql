@@ -37,6 +37,11 @@ renamed AS (
         filename
     
     FROM source
+        WHERE request_datetime < TIMESTAMP '2022-12-31'
+            AND trip_miles >= 0 -- drop trip distance < 0
+                AND trip_miles < 1000 -- drop trip distance > 1000
+            AND trip_time >= 0 -- drop trip time < 0
+                AND trip_time < 30000 -- drop trip time > 1000
 )
 
 SELECT * FROM renamed

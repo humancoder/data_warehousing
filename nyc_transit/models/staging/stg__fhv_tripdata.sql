@@ -18,7 +18,7 @@ renamed AS (
     
     FROM source
     -- should use a macro to make sure all dates are before 2023
-    WHERE dropoff_datetime < TIMESTAMP '2023-01-01'
+    WHERE pickup_datetime < TIMESTAMP '2022-12-31'
 )
 
 SELECT * FROM renamed

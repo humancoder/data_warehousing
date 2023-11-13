@@ -38,6 +38,7 @@ renamed AS (
     FROM source
         WHERE lpep_dropoff_datetime < TIMESTAMP '2023-01-01' -- drop rows outside of dataset
             AND trip_distance >= 0 -- drop trip distance < 0
+            AND trip_distance < 1000 -- drop trip distance > 1000
 )
 
 SELECT * FROM renamed
