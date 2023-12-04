@@ -168,3 +168,6 @@ data/
 dbt_packages/
 logs/
 .DS_Store
+
+answers/yellow_taxi_fare_comparison.txt
+answers/taxi_trips_no_valid_pickup_location_id.txt

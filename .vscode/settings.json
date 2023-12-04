@@ -1,0 +1,10 @@
+{
+    "sqltools.connections": [
+        {
+            "previewLimit": 50,
+            "driver": "DuckDB",
+            "name": "main.db",
+            "database": "${workspaceFolder:data_warehousing}/main.db"
+        }
+    ]
+}
